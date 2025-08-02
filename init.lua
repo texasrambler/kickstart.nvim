@@ -98,11 +98,16 @@ vim.g.have_nerd_font = true
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
 
+-- NOTE: This default tab behavior
+vim.opt.tabstop = 3
+vim.opt.shiftwidth = 3
+vim.opt.expandtab = true
+
 -- Make line numbers default
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -132,7 +137,7 @@ vim.opt.smartcase = true
 vim.opt.signcolumn = 'yes'
 
 -- Decrease update time
-vim.opt.updatetime = 250
+vim.opt.updatetime = 150
 
 -- Decrease mapped sequence wait time
 vim.opt.timeoutlen = 300
@@ -236,7 +241,44 @@ require('lazy').setup({
   --
   -- Use `opts = {}` to force a plugin to be loaded.
   --
+  {
+    'quarto-dev/quarto-nvim',
+    opts = {
+      debug = false,
+      closePreviewOnExit = true,
+      lspFeatures = {
+        enabled = true,
+        chunks = 'curly',
+        languages = { 'r', 'python', 'julia', 'bash', 'html' },
+        diagnostics = {
+          enabled = true,
+          triggers = { 'BufWritePost' },
+        },
+        completion = {
+          enabled = true,
+        },
+      },
+      codeRunner = {
+        enabled = true,
+        default_method = 'slime', -- "molten", "slime", "iron" or <function>
+        ft_runners = {}, -- filetype to runner, ie. `{ python = "molten" }`.
+        -- Takes precedence over `default_method`
+        never_run = { 'yaml' }, -- filetypes which are never sent to a code runner
+      },
+    },
+    config = function()
+      local runner = require 'quarto.runner'
+      vim.keymap.set('n', '<localleader>rc', runner.run_cell, { desc = 'run cell', silent = true })
+      vim.keymap.set('n', '<localleader>ra', runner.run_above, { desc = 'run cell and above', silent = true })
+      vim.keymap.set('n', '<localleader>rA', runner.run_all, { desc = 'run all cells', silent = true })
+      vim.keymap.set('n', '<localleader>rl', runner.run_line, { desc = 'run line', silent = true })
+      vim.keymap.set('v', '<localleader>r', runner.run_range, { desc = 'run visual range', silent = true })
 
+      vim.keymap.set('n', '<localleader>RA', function()
+        runner.run_all(true)
+      end, { desc = 'run all cells of all languages', silent = true })
+    end,
+  },
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
   --    require('gitsigns').setup({ ... })
@@ -317,7 +359,10 @@ require('lazy').setup({
       spec = {
         { '<leader>c', group = '[C]ode', mode = { 'n', 'x' } },
         { '<leader>d', group = '[D]ocument' },
-        { '<leader>r', group = '[R]ename' },
+        { '<leader>n', group = 're[N]ame' },
+        { '<leader>r', group = '[R]un' },
+        { '<leader>R', group = '[R]un [A]ll' },
+        { '<leader>l', group = '[L]azygit' },
         { '<leader>s', group = '[S]earch' },
         { '<leader>w', group = '[W]orkspace' },
         { '<leader>t', group = '[T]oggle' },
